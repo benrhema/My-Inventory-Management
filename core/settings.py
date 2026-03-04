@@ -39,7 +39,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'widget_tweaks',                            # uses 'django-widget-tweaks' app
-    'crispy_forms',                             # uses 'django-crispy-forms' app
+    'crispy_forms',
+    'crispy_bootstrap4',                             # uses 'django-crispy-forms' app
     'login_required',                           # uses 'django-login-required-middleware' app
 
     'homepage.apps.HomepageConfig',
