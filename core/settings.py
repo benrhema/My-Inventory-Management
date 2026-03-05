@@ -43,9 +43,9 @@ INSTALLED_APPS = [
     'crispy_bootstrap4',                             # uses 'django-crispy-forms' app
     'login_required',                           # uses 'django-login-required-middleware' app
 
-    'homepage.apps.HomepageConfig',
+    
     'inventory.apps.InventoryConfig',
-    'transactions.apps.TransactionsConfig',
+    
 
 ]
 

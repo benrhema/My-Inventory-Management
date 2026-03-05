@@ -1,0 +1,97 @@
+{% extends 'inventory/base.html' %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto">
+    <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-800">Transaction History</h1>
+            <p class="text-gray-500">Search and audit all canteen sales and student deposits.</p>
+        </div>
+        <button onclick="window.print()" class="bg-white border border-gray-200 text-gray-700 px-4 py-2 rounded-xl font-semibold hover:bg-gray-50 transition-all flex items-center shadow-sm">
+            <i data-lucide="printer" class="w-4 h-4 mr-2"></i>
+            Print Report
+        </button>
+    </div>
+
+    <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 mb-6">
+        <form method="get" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="relative">
+                <i data-lucide="search" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                <input type="text" name="student__name" 
+                       value="{{ filter.form.student__name.value|default_if_none:'' }}" 
+                       placeholder="Search student name..." 
+                       class="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all">
+            </div>
+
+            <div>
+                <select name="type" class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all">
+                    <option value="">All Transaction Types</option>
+                    <option value="SALE" {% if filter.form.type.value == 'SALE' %}selected{% endif %}>Sales Only</option>
+                    <option value="DEPOSIT" {% if filter.form.type.value == 'DEPOSIT' %}selected{% endif %}>Deposits Only</option>
+                </select>
+            </div>
+
+            <div class="flex gap-2">
+                <button type="submit" class="flex-1 bg-indigo-600 text-white font-bold py-2 rounded-xl hover:bg-indigo-700 transition-all shadow-md active:scale-95">
+                    Apply Filter
+                </button>
+                <a href="{% url 'transaction_history' %}" class="px-4 py-2 bg-gray-100 text-gray-500 rounded-xl hover:bg-gray-200 transition-all flex items-center justify-center" title="Reset Filters">
+                    <i data-lucide="rotate-ccw" class="w-5 h-5"></i>
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead class="bg-gray-50 text-gray-400 text-xs uppercase tracking-wider">
+                    <tr>
+                        <th class="px-6 py-4">Date & Time</th>
+                        <th class="px-6 py-4">Student</th>
+                        <th class="px-6 py-4">Type</th>
+                        <th class="px-6 py-4">Description</th>
+                        <th class="px-6 py-4 text-right">Amount</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-50">
+                    {% for tx in transactions %}
+                    <tr class="hover:bg-gray-50 transition-colors">
+                        <td class="px-6 py-4 text-sm text-gray-600">
+                            {{ tx.timestamp|date:"M d, Y H:i" }}
+                        </td>
+                        <td class="px-6 py-4 font-medium text-gray-900">
+                            {{ tx.student.name }}
+                        </td>
+                        <td class="px-6 py-4">
+                            {% if tx.type == 'SALE' %}
+                            <span class="px-2 py-1 text-[10px] font-bold bg-red-100 text-red-700 rounded-full">SALE</span>
+                            {% else %}
+                            <span class="px-2 py-1 text-[10px] font-bold bg-green-100 text-green-700 rounded-full">DEPOSIT</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 text-sm text-gray-500">
+                            {{ tx.description }}
+                        </td>
+                        <td class="px-6 py-4 text-right font-bold {% if tx.type == 'SALE' %}text-red-600{% else %}text-green-600{% endif %}">
+                            {% if tx.type == 'SALE' %}-{% else %}+{% endif %} RWF {{ tx.total_amount }}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="px-6 py-4 text-center text-gray-500 italic">
+                            No transactions found matching your search.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        {% if is_paginated %}
+        <div class="p-4 border-t border-gray-50 flex justify-center">
+             </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

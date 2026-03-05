@@ -16,15 +16,24 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from django.contrib.auth import views as auth_views
-
-from django.conf.urls.static import static                      # used for static files
+from inventory import views as inventory_views  # New Dashboard
 
 urlpatterns = [
-    path('admin/', admin.site.urls, name='admin'),
+    # Admin Panel
+    path('admin/', admin.site.urls),
+
+    # Authentication
     path('login/', auth_views.LoginView.as_view(template_name='login.html'), name='login'),
     path('logout/', auth_views.LogoutView.as_view(template_name='logout.html'), name='logout'),
 
-    path('', include('homepage.urls')),
+    # --- THE NEW SYSTEM ---
+    
+    # 1. Home / Dashboard (Now points strictly to Inventory App)
+    path('', inventory_views.canteen_dashboard, name='home'),
+
+    # 2. Main App Logic (Inventory, POS, History, Students)
     path('inventory/', include('inventory.urls')),
-    path('transactions/', include('transactions.urls')),
+
+    # NOTE: Transactions and Homepage paths have been REMOVED to 
+    # prevent conflicts and ensure only the New UI is used.
 ]
