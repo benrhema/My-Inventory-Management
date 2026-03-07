@@ -1,97 +1,118 @@
 {% extends "inventory/base.html" %}
-
 {% load widget_tweaks %}
-
 
 {% block title %} Inventory List {% endblock title %}
 
-
 {% block content %}
-    <!-- Log on to codeastro.com for more projects -->
-    <div class="row" style="color: #4e4e4e; font-style: bold; font-size: 3rem; ">
-        <div class="col-md-8">Inventory List</div>
-        <div class="col-md-4">               
-            <div style="float:right;"> <a class="btn btn-success" href="{% url 'new-stock' %}">Add New Stock</a> </div>
+<div class="max-w-6xl mx-auto">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-800">Inventory Management</h1>
+            <p class="text-gray-500">View, search, and manage all canteen stock items.</p>
+        </div>
+        <div class="flex gap-3">
+            <a href="{% url 'add-category' %}" class="bg-white border border-gray-200 text-gray-600 font-bold py-3 px-6 rounded-xl hover:bg-gray-50 transition-all shadow-sm flex items-center">
+                <i data-lucide="folder-plus" class="w-5 h-5 mr-2"></i>
+                New Category
+            </a>
+            <a href="{% url 'new-stock' %}" class="bg-indigo-600 text-white font-bold py-3 px-6 rounded-xl hover:bg-indigo-700 transition-all shadow-md flex items-center">
+                <i data-lucide="plus-circle" class="w-5 h-5 mr-2"></i>
+                Add New Stock
+            </a>
         </div>
     </div>
-    
-    <div style="border-bottom: 1px solid white;"></div>
-    
-    <br>
 
-    <table class="table table-css table-bordered table-hover">
-
-	<!-- Log on to codeastro.com for more projects -->
-        <form method="get">
-            <div class="input-group search">
-                {% render_field filter.form.name class="form-control textinput" placeholder="Search by stock name" %}
-                <div class="input-group-append">
-                   <button type="submit" class="btn btn-pink"> Search </button>
+    <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 mb-8">
+        <form method="get" class="flex flex-wrap md:flex-nowrap gap-4">
+            <div class="relative flex-1">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                    <i data-lucide="search" class="w-5 h-5"></i>
                 </div>
+                {% render_field filter.form.name class="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all" placeholder="Search by stock name..." %}
             </div>
+            <button type="submit" class="bg-gray-800 text-white px-8 py-3 rounded-xl font-bold hover:bg-gray-900 transition-all">
+                Search
+            </button>
         </form>
-
-        <br>
-        
-        <thead class="thead-dark align-middle">
-            <tr>
-                <th width="40%">Stock Name</th>
-                <th>Current Stock in Inventory</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-                  
-{% if object_list %}
-
-        <tbody>     <!-- Log on to codeastro.com for more projects -->    
-            {% for stock in object_list %}
-                <tr>
-                    <td>
-                        <p>{{ stock.name }}</p>
-                    </td>
-                    <td class="align-middle">{{ stock.quantity }}</td>
-                    <td class="align-middle">
-                        <a href="{% url 'edit-stock' stock.pk %}" class="btn btn-info btn-sm">Edit Details</a>
-                        <a href="{% url 'delete-stock' stock.pk %}" class="btn btn-danger btn-sm"> Delete Stock </a>
-                    </td>          
-                </tr>
-            {% endfor %}                   
-        </tbody>
-
-    </table>  
-
-    <div class="align-middle">
-        {% if is_paginated %}
-
-            {% if page_obj.has_previous %}
-                <a class="btn btn-outline-info mb-4" href="?page=1">First</a>
-                <a class="btn btn-outline-info mb-4" href="?page={{ page_obj.previous_page_number }}">Previous</a>
-            {% endif %}
-
-            {% for num in page_obj.paginator.page_range %}
-                {% if page_obj.number == num %}
-                    <a class="btn btn-info mb-4" href="?page={{ num }}">{{ num }}</a>
-                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-                    <a class="btn btn-outline-info mb-4" href="?page={{ num }}">{{ num }}</a>
-                {% endif %}
-            {% endfor %}
-
-            {% if page_obj.has_next %}<!-- Log on to codeastro.com for more projects -->
-                <a class="btn btn-outline-info mb-4" href="?page={{ page_obj.next_page_number }}">Next</a>
-                <a class="btn btn-outline-info mb-4" href="?page={{ page_obj.paginator.num_pages }}">Last</a>
-            {% endif %}
-
-        {% endif %}
     </div>
 
-{% else %}
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left">
+                <thead class="bg-gray-50 text-gray-400 text-xs uppercase font-semibold">
+                    <tr>
+                        <th class="px-6 py-4">Product Details</th>
+                        <th class="px-6 py-4">Category</th>
+                        <th class="px-6 py-4 text-center">Stock Level</th>
+                        <th class="px-6 py-4">Pricing (Buy/Sell)</th>
+                        <th class="px-6 py-4 text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-50">
+                    {% for stock in object_list %}
+                    <tr class="hover:bg-gray-50/50 transition-colors">
+                        <td class="px-6 py-4">
+                            <p class="font-bold text-gray-900">{{ stock.name }}</p>
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="px-3 py-1 bg-gray-100 text-gray-600 rounded-lg text-xs font-medium uppercase">
+                                {{ stock.category.name|default:"Uncategorized" }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 text-center">
+                            <span class="text-sm font-bold {% if stock.quantity == 0 %}text-red-500{% elif stock.quantity < 10 %}text-orange-500{% else %}text-gray-700{% endif %}">
+                                {{ stock.quantity }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 text-sm">
+                            <div class="text-gray-400">B: RWF {{ stock.buy_price }}</div>
+                            <div class="font-bold text-gray-900">S: RWF {{ stock.sell_price }}</div>
+                        </td>
+                        <td class="px-6 py-4 text-right space-x-2">
+                            <a href="{% url 'edit-stock' stock.pk %}" class="inline-flex items-center px-3 py-2 border border-indigo-100 text-indigo-600 bg-indigo-50 rounded-lg hover:bg-indigo-100 transition-all text-xs font-bold">
+                                <i data-lucide="edit-3" class="w-3.5 h-3.5 mr-1.5"></i> Edit
+                            </a>
+                            <a href="{% url 'delete-stock' stock.pk %}" class="inline-flex items-center px-3 py-2 border border-red-100 text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-all text-xs font-bold">
+                                <i data-lucide="trash-2" class="w-3.5 h-3.5 mr-1.5"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="px-6 py-12 text-center">
+                            <div class="flex flex-col items-center">
+                                <i data-lucide="box" class="w-12 h-12 text-gray-200 mb-4"></i>
+                                <p class="text-gray-500 font-medium">No stock found in inventory.</p>
+                                <a href="{% url 'new-stock' %}" class="mt-2 text-indigo-600 font-bold hover:underline">Add your first item</a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
 
-        <tbody></tbody>   
-    </table><!-- Log on to codeastro.com for more projects -->
+    {% if is_paginated %}
+    <div class="flex items-center justify-center gap-2 mt-8">
+        {% if page_obj.has_previous %}
+            <a href="?page=1" class="px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-500 hover:bg-gray-50 transition-all text-sm font-bold">First</a>
+            <a href="?page={{ page_obj.previous_page_number }}" class="px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-500 hover:bg-gray-50 transition-all text-sm font-bold">Prev</a>
+        {% endif %}
 
-    <br><br><br><br><br><br><br><br>
-    <div style="color: #575757; font-style: bold; font-size: 1.5rem; text-align: center;">The records are empty. Please try adding some.</div>
+        {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+                <span class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-bold shadow-sm">{{ num }}</span>
+            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                <a href="?page={{ num }}" class="px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-500 hover:bg-gray-50 transition-all text-sm font-bold">{{ num }}</a>
+            {% endif %}
+        {% endfor %}
 
-{% endif %}
-
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}" class="px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-500 hover:bg-gray-50 transition-all text-sm font-bold">Next</a>
+            <a href="?page={{ page_obj.paginator.num_pages }}" class="px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-500 hover:bg-gray-50 transition-all text-sm font-bold">Last</a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
 {% endblock content %}

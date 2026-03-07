@@ -5,18 +5,24 @@ from django.contrib import messages
 from django.db.models import Sum
 from django.urls import reverse_lazy
 from django.db import transaction
-from .models import Stock, Student, Transaction, TransactionItem
-from .forms import StockForm
+from .models import Stock, Student, Transaction, TransactionItem, Category
+from .forms import StockForm, CategoryForm
 from django_filters.views import FilterView
 from .filters import StockFilter, TransactionFilter 
+from decimal import Decimal, InvalidOperation
 
 # --- 1. CANTEEN DASHBOARD ---
 def canteen_dashboard(request):
-    """ Main landing page with key statistics and recent activity. """
+    """ Main landing page with profit tracking and all stock visibility. """
+    # Show all active items, even if quantity is 0
     stocks = Stock.objects.filter(is_deleted=False)
     
     # Financial Calculations
     total_value = sum(item.total_stock_value for item in stocks)
+    
+    # Calculate Total Potential Profit: (Sell Price - Buy Price) * Quantity
+    total_profit = sum((item.sell_price - item.buy_price) * item.quantity for item in stocks)
+    
     total_balances = Student.objects.aggregate(Sum('balance'))['balance__sum'] or 0
     low_stock_count = stocks.filter(quantity__lt=10).count()
     
@@ -25,16 +31,17 @@ def canteen_dashboard(request):
 
     context = {
         'total_value': total_value,
+        'total_profit': total_profit,
         'total_balances': total_balances,
         'low_stock_count': low_stock_count,
         'recent_transactions': recent_transactions,
-        'stocks': stocks[:5], 
+        'stocks': stocks, # Passed full list to show all items
     }
     return render(request, "inventory/index.html", context)
 
 # --- 2. SALES LOGIC (POS) ---
 def process_sale(request):
-    """ Handles the Point of Sale logic: deducts money from student and quantity from stock. """
+    """ Handles Point of Sale logic. """
     if request.method == 'POST':
         student_id = request.POST.get('student_id')
         stock_id = request.POST.get('stock_id')
@@ -47,19 +54,15 @@ def process_sale(request):
 
         student = get_object_or_404(Student, id=student_id)
         item = get_object_or_404(Stock, id=stock_id)
-        total_cost = item.sell_price * qty
+        total_cost = item.sell_price * Decimal(qty)
 
         if student.balance >= total_cost and item.quantity >= qty:
             with transaction.atomic():
-                # Deduct funds
                 student.balance -= total_cost
                 student.save()
-
-                # Deduct inventory
                 item.quantity -= qty
                 item.save()
 
-                # Create master transaction
                 sale = Transaction.objects.create(
                     student=student,
                     total_amount=total_cost,
@@ -67,7 +70,6 @@ def process_sale(request):
                     description=f"Purchased {qty}x {item.name}"
                 )
                 
-                # Create line item details
                 TransactionItem.objects.create(
                     transaction=sale,
                     stock=item,
@@ -87,17 +89,25 @@ def process_sale(request):
     }
     return render(request, "inventory/pos.html", context)
 
-# --- 3. DEPOSIT LOGIC ---
+# --- 3. CATEGORY MANAGEMENT ---
+class CategoryCreateView(SuccessMessageMixin, CreateView):
+    """ Allows creating a category within the UI. """
+    model = Category
+    form_class = CategoryForm
+    template_name = "inventory/add_category.html"
+    success_url = reverse_lazy('new-stock')
+    success_message = "Category created successfully!"
+
+# --- 4. DEPOSIT LOGIC ---
 def deposit_money(request):
-    """ Adds funds to a student's digital wallet and records the transaction. """
     if request.method == 'POST':
         student_id = request.POST.get('student_id')
         amount_raw = request.POST.get('amount', 0)
         
         try:
-            amount = float(amount_raw)
-        except (ValueError, TypeError):
-            amount = 0
+            amount = Decimal(amount_raw)
+        except (ValueError, TypeError, InvalidOperation):
+            amount = Decimal('0')
 
         if amount > 0:
             student = get_object_or_404(Student, id=student_id)
@@ -115,17 +125,14 @@ def deposit_money(request):
             messages.success(request, f"Successfully deposited RWF {amount} to {student.name}'s account.")
             return redirect('students')
         else:
-            messages.error(request, "Invalid deposit amount. Please enter a value greater than 0.")
+            messages.error(request, "Invalid deposit amount.")
             return redirect('deposit_money')
 
-    context = {
-        'students': Student.objects.all().order_by('name'),
-    }
+    context = {'students': Student.objects.all().order_by('name')}
     return render(request, "inventory/deposit.html", context)
 
-# --- 4. STUDENT MANAGEMENT ---
+# --- 5. STOCK & STUDENT VIEWS ---
 class StudentListView(FilterView):
-    """ Displays all students with a search/filter capability. """
     model = Student
     template_name = 'inventory/students.html'
     context_object_name = 'students'
@@ -136,33 +143,32 @@ class StudentListView(FilterView):
         return context
 
 def add_student(request):
-    """ Direct view to register a new student. """
     if request.method == "POST":
         name = request.POST.get('name')
-        balance = request.POST.get('balance', 0)
+        balance_raw = request.POST.get('balance', 0)
+        try:
+            balance = Decimal(balance_raw)
+        except (ValueError, TypeError, InvalidOperation):
+            balance = Decimal('0')
         
         if name:
             Student.objects.create(name=name, balance=balance)
             messages.success(request, f"Student {name} added successfully!")
             return redirect('students')
-            
     return render(request, 'inventory/add_student.html')
 
-# --- 5. STOCK MANAGEMENT ---
 class StockListView(FilterView):
-    """ Displays the current inventory levels. """
     filterset_class = StockFilter
     queryset = Stock.objects.filter(is_deleted=False)
     template_name = 'inventory/inventory.html' 
     paginate_by = 10
 
 class StockCreateView(SuccessMessageMixin, CreateView):
-    """ Page to add a completely new product to the system. """
     model = Stock
     form_class = StockForm
     template_name = "inventory/edit_stock.html" 
     success_url = reverse_lazy('inventory')
-    success_message = "New item added to inventory successfully."
+    success_message = "New item added successfully."
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -171,7 +177,6 @@ class StockCreateView(SuccessMessageMixin, CreateView):
         return context 
 
 class StockUpdateView(SuccessMessageMixin, UpdateView):
-    """ Page to edit existing item details or restock. """
     model = Stock
     form_class = StockForm
     template_name = "inventory/edit_stock.html" 
@@ -186,10 +191,7 @@ class StockUpdateView(SuccessMessageMixin, UpdateView):
         return context
 
 class StockDeleteView(View):
-    """ Handles logical deletion (is_deleted=True) of stock items. """
     template_name = "inventory/delete_stock.html" 
-    success_message = "Stock item removed from active inventory."
-    
     def get(self, request, pk):
         stock = get_object_or_404(Stock, pk=pk)
         return render(request, self.template_name, {'object': stock})
@@ -198,12 +200,10 @@ class StockDeleteView(View):
         stock = get_object_or_404(Stock, pk=pk)
         stock.is_deleted = True
         stock.save()                               
-        messages.success(request, self.success_message)
+        messages.success(request, "Stock item removed.")
         return redirect('inventory')
 
-# --- 6. TRANSACTION HISTORY ---
 class TransactionListView(FilterView):
-    """ Full history of all sales and deposits. """
     model = Transaction
     filterset_class = TransactionFilter 
     template_name = 'inventory/history.html'

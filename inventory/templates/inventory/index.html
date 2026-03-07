@@ -14,6 +14,17 @@
 
     <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
         <div class="flex items-center justify-between mb-4">
+            <div class="p-3 bg-green-50 rounded-lg text-green-600">
+                <i data-lucide="trending-up"></i>
+            </div>
+            <span class="text-[10px] font-bold bg-green-100 text-green-700 px-2 py-1 rounded-full uppercase">Expected</span>
+        </div>
+        <p class="text-sm text-gray-500">Potential Profit</p>
+        <h3 class="text-2xl font-bold text-green-600">RWF {{ total_profit }}</h3>
+    </div>
+
+    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+        <div class="flex items-center justify-between mb-4">
             <div class="p-3 bg-purple-50 rounded-lg text-purple-600">
                 <i data-lucide="users"></i>
             </div>
@@ -30,16 +41,6 @@
         </div>
         <p class="text-sm text-gray-500">Low Stock Items</p>
         <h3 class="text-2xl font-bold text-orange-600">{{ low_stock_count }} Items</h3>
-    </div>
-
-    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-        <div class="flex items-center justify-between mb-4">
-            <div class="p-3 bg-green-50 rounded-lg text-green-600">
-                <i data-lucide="trending-up"></i>
-            </div>
-        </div>
-        <p class="text-sm text-gray-500">Total Transactions</p>
-        <h3 class="text-2xl font-bold text-green-600">{{ recent_transactions.count }}</h3>
     </div>
 </div>
 
@@ -64,7 +65,9 @@
                     {% for item in stocks %}
                     <tr class="hover:bg-gray-50 transition-colors">
                         <td class="px-6 py-4 font-medium">{{ item.name }}</td>
-                        <td class="px-6 py-4 text-sm text-gray-500">{{ item.quantity }}</td>
+                        <td class="px-6 py-4 text-sm {% if item.quantity == 0 %}text-red-500 font-bold{% else %}text-gray-500{% endif %}">
+                            {{ item.quantity }}
+                        </td>
                         <td class="px-6 py-4 font-bold">RWF {{ item.sell_price }}</td>
                         <td class="px-6 py-4">
                             {% if item.quantity > 10 %}
@@ -72,7 +75,7 @@
                             {% elif item.quantity > 0 %}
                             <span class="px-2 py-1 text-[10px] font-bold bg-orange-100 text-orange-700 rounded-full">LOW</span>
                             {% else %}
-                            <span class="px-2 py-1 text-[10px] font-bold bg-red-100 text-red-700 rounded-full">OUT</span>
+                            <span class="px-2 py-1 text-[10px] font-bold bg-red-100 text-red-700 rounded-full">OUT OF STOCK</span>
                             {% endif %}
                         </td>
                     </tr>
@@ -98,9 +101,12 @@
                 <a href="{% url 'deposit_money' %}" class="block w-full py-3 bg-indigo-600 border border-indigo-500 text-white font-bold rounded-xl hover:bg-indigo-500 transition-colors text-center">
                     Deposit Money
                 </a>
+
+                <a href="{% url 'add-category' %}" class="block w-full py-3 bg-indigo-800 text-indigo-100 font-semibold rounded-xl hover:bg-indigo-900 transition-colors text-center text-sm">
+                    + Add Category
+                </a>
             </div>
         </div>
     </div>
-
 </div>
 {% endblock %}

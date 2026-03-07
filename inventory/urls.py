@@ -6,6 +6,7 @@ urlpatterns = [
     path('', views.canteen_dashboard, name='home'),
 
     # 2. Inventory / Stock Management
+    # This matches StockListView, StockCreateView, and StockUpdateView
     path('inventory/', views.StockListView.as_view(), name='inventory'),
     path('inventory/new/', views.StockCreateView.as_view(), name='new-stock'),
     path('inventory/<int:pk>/edit/', views.StockUpdateView.as_view(), name='edit-stock'),
@@ -19,4 +20,6 @@ urlpatterns = [
     path('sale/', views.process_sale, name='process_sale'),
     path('deposit/', views.deposit_money, name='deposit_money'),
     path('history/', views.TransactionListView.as_view(), name='transaction_history'),
+    path('inventory/category/new/', views.CategoryCreateView.as_view(), name='add-category'),
+    path('inventory/category/new/', views.CategoryCreateView.as_view(), name='add-category'),
 ]

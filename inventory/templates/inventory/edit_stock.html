@@ -19,7 +19,22 @@
                 <label for="{{ field.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
                     {{ field.label }}
                 </label>
-                {{ field }}
+                
+                {% if field.name == 'category' %}
+                <div class="flex gap-2">
+                    <div class="flex-1">
+                        {{ field }}
+                    </div>
+                    <a href="{% url 'add-category' %}" 
+                       class="bg-gray-100 hover:bg-gray-200 text-gray-600 p-3 rounded-xl transition-all flex items-center justify-center border border-gray-200"
+                       title="Add New Category">
+                        <i data-lucide="plus" class="w-6 h-6"></i>
+                    </a>
+                </div>
+                {% else %}
+                    {{ field }}
+                {% endif %}
+
                 {% if field.errors %}
                     {% for error in field.errors %}
                         <p class="text-red-500 text-xs mt-1">{{ error }}</p>
