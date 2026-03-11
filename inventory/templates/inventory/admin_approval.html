@@ -1,0 +1,46 @@
+{% extends 'inventory/base.html' %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-800">Pending Approvals</h1>
+        <p class="text-gray-500">Review and activate new canteen portals.</p>
+    </div>
+
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <table class="w-full text-left border-collapse">
+            <thead class="bg-gray-50 text-gray-400 text-xs uppercase tracking-wider">
+                <tr>
+                    <th class="px-6 py-4">Canteen Name</th>
+                    <th class="px-6 py-4">Username</th>
+                    <th class="px-6 py-4">Requested Date</th>
+                    <th class="px-6 py-4 text-right">Action</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-50">
+                {% for canteen in pending %}
+                <tr class="hover:bg-gray-50 transition-colors">
+                    <td class="px-6 py-4 font-bold text-gray-900">{{ canteen.name }}</td>
+                    <td class="px-6 py-4 text-gray-600">@{{ canteen.owner.username }}</td>
+                    <td class="px-6 py-4 text-sm text-gray-500">{{ canteen.created_at|date:"M d, Y" }}</td>
+                    <td class="px-6 py-4 text-right">
+                        <form action="{% url 'approve_canteen' canteen.pk %}" method="post" class="inline">
+                            {% csrf_token %}
+                            <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded-lg font-bold text-sm hover:bg-green-700 shadow-md">
+                                Approve & Open Portal
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4" class="px-6 py-12 text-center text-gray-400 italic">
+                        No pending requests at the moment.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
