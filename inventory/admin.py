@@ -1,52 +1,66 @@
 from django.contrib import admin
-from .models import Stock, Category, Student, Transaction, TransactionItem
+from .models import Canteen, Stock, Category, Student, Transaction, TransactionItem, StockBatch
 
-# 1. Define Inlines first so they can be used in other classes
+# 1. Inline for Transaction Items (Shows items inside the Transaction view)
 class TransactionItemInline(admin.TabularInline):
     model = TransactionItem
-    extra = 0 # Don't show extra empty rows
+    extra = 0
     readonly_fields = ('stock', 'quantity', 'price_at_time_of_sale')
 
-# 2. Register Category
+# 2. Register Canteen (CRITICAL: This fixes your 404 error)
+@admin.register(Canteen)
+class CanteenAdmin(admin.ModelAdmin):
+    list_display = ('name', 'owner', 'is_approved', 'created_at')
+    list_filter = ('is_approved',)
+    search_fields = ('name', 'owner__username')
+
+# 3. Register Category
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
-    list_display = ('name', 'description')
+    list_display = ('name', 'canteen', 'description')
+    list_filter = ('canteen',)
     search_fields = ('name',)
 
-# 3. Register Student (The Wallet)
+# 4. Register Student
 @admin.register(Student)
 class StudentAdmin(admin.ModelAdmin):
-    list_display = ('name', 'balance', 'created_at') # 'student_id' is gone
-    search_fields = ('name', 'student_id')
-    list_filter = ('created_at',)
+    list_display = ('name', 'canteen', 'balance', 'created_at')
+    search_fields = ('name',)
+    list_filter = ('canteen', 'created_at')
     readonly_fields = ('created_at',)
 
-# 4. Register Stock (The Inventory)
+# 5. Register Stock
 @admin.register(Stock)
 class StockAdmin(admin.ModelAdmin):
-    list_display = ('name', 'category', 'quantity', 'buy_price', 'sell_price', 'total_stock_value', 'is_deleted')
-    list_filter = ('category', 'is_deleted')
+    list_display = ('name', 'canteen', 'category', 'quantity', 'buy_price', 'sell_price', 'is_deleted')
+    list_filter = ('canteen', 'category', 'is_deleted')
     search_fields = ('name',)
     readonly_fields = ('total_stock_value', 'unit_profit', 'potential_total_profit')
 
     fieldsets = (
         ('Basic Information', {
-            'fields': ('name', 'category', 'quantity', 'is_deleted')
+            'fields': ('canteen', 'name', 'category', 'quantity', 'unit', 'low_stock_threshold', 'is_deleted')
         }),
         ('Pricing & Financials', {
-            'description': 'Calculates the value of the inventory and potential earnings.',
             'fields': ('buy_price', 'sell_price', 'total_stock_value', 'unit_profit', 'potential_total_profit')
         }),
     )
 
-# 5. Register Transaction (The Receipt Header)
+# 6. Register Transaction
 @admin.register(Transaction)
 class TransactionAdmin(admin.ModelAdmin):
-    list_display = ('timestamp', 'student', 'type', 'total_amount')
-    list_filter = ('type', 'timestamp')
+    list_display = ('timestamp', 'canteen', 'student', 'type', 'total_amount')
+    list_filter = ('canteen', 'type', 'timestamp')
     search_fields = ('student__name', 'description')
     readonly_fields = ('timestamp',)
-    inlines = [TransactionItemInline] # This works now because the Inline is defined above
+    inlines = [TransactionItemInline]
 
-# 6. Register TransactionItem (Individual items on receipts)
+# 7. Register StockBatch (To manage FIFO batches)
+@admin.register(StockBatch)
+class StockBatchAdmin(admin.ModelAdmin):
+    list_display = ('stock_item', 'quantity_received', 'current_quantity', 'cost_price', 'date_received', 'expiry_date')
+    list_filter = ('date_received', 'expiry_date')
+    search_fields = ('stock_item__name',)
+
+# Register TransactionItem separately as well
 admin.site.register(TransactionItem)

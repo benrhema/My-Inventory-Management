@@ -1,55 +1,97 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic import View, CreateView, UpdateView
 from django.contrib.messages.views import SuccessMessageMixin
+from django.contrib.auth.mixins import LoginRequiredMixin 
 from django.contrib import messages
 from django.db.models import Sum, F, Q
 from django.urls import reverse_lazy
 from django.db import transaction
 from django.contrib.auth.models import User
+from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.utils.decorators import method_decorator
 from decimal import Decimal
 from django_filters.views import FilterView
 from django.utils import timezone
 from datetime import timedelta
+from django.contrib.auth import logout as auth_logout
 
 # Local imports
 from .models import Canteen, Stock, Student, Transaction, TransactionItem, Category, StockBatch
 from .forms import StockForm, CategoryForm
 from .filters import StockFilter, TransactionFilter 
 
+# Custom logout view for simple GET logout
+@login_required
+def logout_view(request):
+    """Custom logout via GET - logs out and redirects to login."""
+    auth_logout(request)
+    return redirect('login')
+
 # --- 1. REGISTRATION & APPROVAL ---
 
 def register_canteen(request):
+    # If already logged in, don't show registration
+    if request.user.is_authenticated:
+        return redirect('home')
+
     if request.method == 'POST':
         c_name = request.POST.get('canteen_name')
         uname = request.POST.get('username')
         pword = request.POST.get('password')
         
+        if not uname or not pword or not c_name:
+            messages.error(request, "All fields are required.")
+            return render(request, "inventory/register.html")
+
         if User.objects.filter(username=uname).exists():
             messages.error(request, "Username already taken.")
-            return redirect('register')
+            return render(request, "inventory/register.html")
             
+        # Create the user
         user = User.objects.create_user(username=uname, password=pword)
-        user.is_active = False 
+        user.is_active = True 
         user.save()
         
-        Canteen.objects.create(owner=user, name=c_name)
-        messages.success(request, "Request sent! Wait for Super Admin approval.")
+        # Create the canteen
+        Canteen.objects.create(owner=user, name=c_name, is_approved=False, request_pending=False)
+        
+        messages.success(request, "Registration successful! Please log in to request approval.")
         return redirect('login')
     return render(request, "inventory/register.html")
 
+@login_required
+def request_approval(request):
+    """Page where managers see their status and notify Rhema"""
+    try:
+        canteen = request.user.canteen
+    except Canteen.DoesNotExist:
+        # If no canteen exists, they shouldn't be here
+        return redirect('logout')
+    
+    # If already approved, get them out of this loop and to the dashboard
+    if canteen.is_approved:
+        return redirect('home')
+
+    if request.method == 'POST':
+        canteen.request_pending = True
+        canteen.save()
+        messages.success(request, "Notification sent to Rhema! Please wait for review.")
+        return redirect('waiting_approval')
+    
+    return render(request, "inventory/request_approval.html", {'canteen': canteen})
+
 @user_passes_test(lambda u: u.is_superuser)
 def superadmin_dashboard(request):
-    pending = Canteen.objects.filter(is_approved=False)
+    """Rhema's view of pending canteens"""
+    pending = Canteen.objects.filter(is_approved=False, request_pending=True)
     return render(request, "inventory/admin_approval.html", {'pending': pending})
 
 @user_passes_test(lambda u: u.is_superuser)
 def approve_canteen(request, pk):
     canteen = get_object_or_404(Canteen, pk=pk)
     canteen.is_approved = True
-    canteen.owner.is_active = True
-    canteen.owner.save()
+    canteen.request_pending = False 
     canteen.save()
     messages.success(request, f"{canteen.name} has been approved!")
     return redirect('superadmin_dashboard')
@@ -58,10 +100,24 @@ def approve_canteen(request, pk):
 
 @login_required
 def canteen_dashboard(request):
-    my_canteen = get_object_or_404(Canteen, owner=request.user)
-    if not my_canteen.is_approved:
-        return render(request, "inventory/waiting_approval.html")
+    # 1. Superusers go to their own dashboard
+    if request.user.is_superuser:
+        return redirect('superadmin_dashboard')
 
+    # 2. Check if canteen exists
+    try:
+        my_canteen = request.user.canteen
+    except Canteen.DoesNotExist:
+        return redirect('logout')
+
+    # 3. If not approved:
+    if not my_canteen.is_approved:
+        # If pending approval, show waiting page; else request page
+        if my_canteen.request_pending:
+            return redirect('waiting_approval')
+        return redirect('request-approval')
+
+    # --- Proceed with normal dashboard logic ---
     stocks = Stock.objects.filter(canteen=my_canteen, is_deleted=False)
     
     total_value = sum(item.total_stock_value for item in stocks)
@@ -89,13 +145,16 @@ def canteen_dashboard(request):
         daily_total = Transaction.objects.filter(canteen=my_canteen, type='SALE', timestamp__date=date).aggregate(Sum('total_amount'))['total_amount__sum'] or 0
         revenue_data.append(float(daily_total))
 
+    categories = list(set([s.category.name if s.category else "Uncategorized" for s in stocks]))
+    cat_data = [float(sum(s.total_stock_value for s in stocks if (s.category.name if s.category else "Uncategorized") == cat)) for cat in categories]
+
     chart_data = {
         'top_labels': [item['stock__name'] for item in top_sold],
         'top_data': [float(item['total_qty']) for item in top_sold],
         'revenue_labels': revenue_labels,
         'revenue_data': revenue_data,
-        'cat_labels': list(set([s.category.name if s.category else "Uncategorized" for s in stocks])),
-        'cat_data': [float(sum(s.total_stock_value for s in stocks if (s.category.name if s.category else "Uncategorized") == cat)) for cat in list(set([s.category.name if s.category else "Uncategorized" for s in stocks]))]
+        'cat_labels': categories,
+        'cat_data': cat_data
     }
 
     context = {
@@ -110,7 +169,7 @@ def canteen_dashboard(request):
     }
     return render(request, "inventory/index.html", context)
 
-# --- 3. MODERN POS & CART LOGIC (FIFO INCLUDED) ---
+# --- 3. MODERN POS & CART LOGIC ---
 
 @login_required
 def add_to_cart(request, stock_id):
@@ -179,7 +238,6 @@ def process_sale(request):
                     stock_item = Stock.objects.get(id=item_id, canteen=my_canteen)
                     qty_to_deduct = Decimal(str(data['quantity']))
                     
-                    # FIFO logic using StockBatch
                     batches = StockBatch.objects.filter(stock_item=stock_item, current_quantity__gt=0).order_by('date_received')
                     temp_qty = qty_to_deduct
                     for batch in batches:
@@ -219,8 +277,7 @@ def process_sale(request):
 
 # --- 4. STOCK & CATEGORY ---
 
-@method_decorator(login_required, name='dispatch')
-class StockListView(FilterView):
+class StockListView(LoginRequiredMixin, FilterView):
     filterset_class = StockFilter
     template_name = 'inventory/inventory.html' 
     paginate_by = 50 
@@ -230,8 +287,7 @@ class StockListView(FilterView):
             queryset = queryset.filter(low_stock_threshold__isnull=False, quantity__lte=F('low_stock_threshold'))
         return queryset.order_by('name')
 
-@method_decorator(login_required, name='dispatch')
-class StockCreateView(SuccessMessageMixin, CreateView):
+class StockCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     model = Stock
     form_class = StockForm
     template_name = "inventory/edit_stock.html" 
@@ -244,8 +300,7 @@ class StockCreateView(SuccessMessageMixin, CreateView):
         form.instance.canteen = self.request.user.canteen
         return super().form_valid(form)
 
-@method_decorator(login_required, name='dispatch')
-class StockUpdateView(SuccessMessageMixin, UpdateView):
+class StockUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     model = Stock
     form_class = StockForm
     template_name = "inventory/edit_stock.html" 
@@ -255,11 +310,11 @@ class StockUpdateView(SuccessMessageMixin, UpdateView):
         kwargs['canteen'] = self.request.user.canteen
         return kwargs
 
-class StockDeleteView(View):
+class StockDeleteView(LoginRequiredMixin, View):
     def post(self, request, pk):  
         stock = get_object_or_404(Stock, pk=pk, canteen=request.user.canteen)
         stock.is_deleted = True
-        stock.save()                                
+        stock.save()                                    
         return redirect('inventory')
 
 @login_required
@@ -283,8 +338,7 @@ def receive_new_stock(request, stock_id):
         return redirect('inventory')
     return render(request, "inventory/receive_stock.html", {'stock': stock_item})
 
-@method_decorator(login_required, name='dispatch')
-class CategoryCreateView(SuccessMessageMixin, CreateView):
+class CategoryCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     model = Category
     form_class = CategoryForm
     template_name = "inventory/add_category.html"
@@ -295,8 +349,7 @@ class CategoryCreateView(SuccessMessageMixin, CreateView):
 
 # --- 5. STUDENTS & DEPOSITS ---
 
-@method_decorator(login_required, name='dispatch')
-class StudentListView(FilterView):
+class StudentListView(LoginRequiredMixin, FilterView):
     model = Student
     template_name = 'inventory/students.html'
     context_object_name = 'students'
@@ -329,8 +382,7 @@ def deposit_money(request):
 
 # --- 6. HISTORY & CART UTILS ---
 
-@method_decorator(login_required, name='dispatch')
-class TransactionListView(FilterView):
+class TransactionListView(LoginRequiredMixin, FilterView):
     model = Transaction
     filterset_class = TransactionFilter 
     template_name = 'inventory/history.html'
@@ -356,7 +408,6 @@ def clear_cart(request):
 def batch_history(request, stock_id):
     my_canteen = request.user.canteen
     stock_item = get_object_or_404(Stock, id=stock_id, canteen=my_canteen)
-    # Get all batches for this item, newest first
     batches = StockBatch.objects.filter(stock_item=stock_item).order_by('-date_received')
     
     return render(request, "inventory/batch_history.html", {

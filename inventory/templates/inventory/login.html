@@ -2,11 +2,16 @@
 {% load widget_tweaks %}
 
 {% block content %}
+<style>
+    nav, .sidebar, .navbar, footer { display: none !important; }
+    main, .content-wrapper { margin-left: 0 !important; padding: 0 !important; width: 100% !important; }
+</style>
+
 <div class="min-h-screen flex items-center justify-center bg-gray-100 py-12 px-4 sm:px-6 lg:px-8">
-    <div class="max-w-md w-full space-y-8 bg-white p-10 rounded-xl shadow-lg border border-gray-200">
+    <div class="max-w-md w-full space-y-8 bg-white p-10 rounded-xl shadow-2xl border border-gray-200">
         <div>
             <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
-                Login to Canteen
+                Smile Again System
             </h2>
             <p class="mt-2 text-center text-sm text-gray-600">
                 Enter your credentials to access your dashboard
@@ -15,7 +20,13 @@
         
         <form class="mt-8 space-y-6" method="POST">
             {% csrf_token %}
-            <div class="rounded-md shadow-sm -space-y-px">
+            {% if form.non_field_errors %}
+                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
+                    {{ form.non_field_errors|first }}
+                </div>
+            {% endif %}
+
+            <div class="rounded-md shadow-sm">
                 {% for field in form %}
                     <div class="mb-4">
                         <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
@@ -30,17 +41,17 @@
             </div>
 
             <div>
-                <button type="submit" class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 ease-in-out">
+                <button type="submit" class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 ease-in-out shadow-md">
                     Sign in
                 </button>
             </div>
         </form>
 
-        <div class="text-center mt-4">
+        <div class="text-center mt-6 border-t pt-6">
             <p class="text-sm text-gray-600">
                 Need a canteen? 
-                <a href="{% url 'register' %}" class="font-medium text-indigo-600 hover:text-indigo-500">
-                    Register here
+                <a href="{% url 'register' %}" class="font-bold text-indigo-600 hover:text-indigo-500">
+                    Register Your Canteen
                 </a>
             </p>
         </div>

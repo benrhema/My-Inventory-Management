@@ -23,8 +23,8 @@ urlpatterns = [
     path('admin/', admin.site.urls),
 
     # Authentication
-    path('login/', auth_views.LoginView.as_view(template_name='login.html'), name='login'),
-    path('logout/', auth_views.LogoutView.as_view(template_name='logout.html'), name='logout'),
+    path('login/', auth_views.LoginView.as_view(template_name='inventory/login.html'), name='login'),
+    path('logout/', inventory_views.logout_view, name='logout'),
 
     # --- THE NEW SYSTEM ---
     
@@ -32,7 +32,7 @@ urlpatterns = [
     path('', inventory_views.canteen_dashboard, name='home'),
 
     # 2. Main App Logic (Inventory, POS, History, Students)
-    path('', include('inventory.urls')),
+    path('inventory/', include('inventory.urls')),
 
     # NOTE: Transactions and Homepage paths have been REMOVED to 
     # prevent conflicts and ensure only the New UI is used.

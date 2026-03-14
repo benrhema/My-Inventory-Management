@@ -7,6 +7,8 @@ class Canteen(models.Model):
     name = models.CharField(max_length=100)
     is_approved = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
+    request_pending = models.BooleanField(default=False) # True when they click the button
+    message_to_admin = models.TextField(blank=True, null=True) # Optional message for you
 
     def __str__(self):
         return self.name

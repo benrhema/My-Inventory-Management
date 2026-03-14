@@ -1,0 +1,75 @@
+{% extends 'inventory/base.html' %}
+
+{% block content %}
+{% if canteen.request_pending %}
+    <meta http-equiv="refresh" content="30">
+{% endif %}
+
+<div class="min-h-screen flex items-center justify-center bg-gray-100 py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md w-full space-y-8 bg-white p-10 rounded-xl shadow-lg border border-gray-200">
+        <div class="text-center">
+            {% if not canteen.request_pending %}
+                <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-blue-100">
+                    <i class="fas fa-paper-plane text-blue-600 text-2xl"></i>
+                </div>
+                <h2 class="mt-4 text-3xl font-extrabold text-gray-900">Final Step!</h2>
+                <p class="mt-2 text-sm text-gray-600">
+                    Your canteen <strong>"{{ canteen.name }}"</strong> is created, but Rhema needs to verify your account before you can start selling.
+                </p>
+            {% else %}
+                <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-yellow-100 animate-pulse">
+                    <i class="fas fa-hourglass-half text-yellow-600 text-2xl"></i>
+                </div>
+                <h2 class="mt-4 text-3xl font-extrabold text-gray-900">Pending Review</h2>
+                <p class="mt-2 text-sm text-gray-600">
+                    We've sent the signal to Rhema. This page will unlock as soon as you are approved.
+                </p>
+            {% endif %}
+        </div>
+
+        <div class="mt-8 space-y-6">
+            {% if not canteen.request_pending %}
+                <form class="mt-8 space-y-4" method="POST">
+                    {% csrf_token %}
+                    <div>
+                        <label for="message" class="block text-sm font-medium text-gray-700 mb-1">
+                            Note for Rhema (Optional)
+                        </label>
+                        <textarea name="message" id="message" rows="3" 
+                            class="appearance-none rounded-lg relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" 
+                            placeholder="e.g. Hi Rhema, this is the Main Campus canteen ready for setup."></textarea>
+                    </div>
+
+                    <button type="submit" 
+                        class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 ease-in-out">
+                        Push Notification to Rhema
+                    </button>
+                </form>
+            {% else %}
+                <div class="rounded-md bg-blue-50 p-4">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-info-circle text-blue-400"></i>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm text-blue-700">
+                                Notification sent! You can leave this page open or log out and check back later.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex flex-col space-y-3 pt-4">
+                    <button onclick="window.location.reload();" class="w-full text-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                        <i class="fas fa-sync-alt mr-2"></i> Check Status Now
+                    </button>
+                    
+                    <a href="{% url 'logout' %}" class="w-full text-center py-2 px-4 text-sm font-medium text-red-600 hover:text-red-500">
+                        Logout
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
