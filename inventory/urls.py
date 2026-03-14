@@ -41,4 +41,6 @@ urlpatterns = [
     path('add-to-cart/<int:stock_id>/', views.add_to_cart, name='add_to_cart'),
     path('cart/remove/<int:stock_id>/', views.remove_from_cart, name='remove_from_cart'),
     path('cart/clear/', views.clear_cart, name='clear_cart'),
+    path('stock/<int:stock_id>/receive/', views.receive_new_stock, name='receive-stock'),
+    path('inventory/<int:stock_id>/batches/', views.batch_history, name='batch-history'),
 ]

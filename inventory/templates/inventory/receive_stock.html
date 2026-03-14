@@ -1,0 +1,90 @@
+{% extends 'inventory/base.html' %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto mt-10 px-4">
+    <div class="mb-6">
+        <a href="{% url 'inventory' %}" class="text-indigo-600 hover:text-indigo-800 flex items-center gap-2 text-sm font-medium transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            Back to Inventory
+        </a>
+    </div>
+
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="bg-indigo-600 px-8 py-6">
+            <h2 class="text-2xl font-bold text-white">Receive Supplier Delivery</h2>
+            <p class="text-indigo-100 mt-1">
+                Updating stock for: <span class="font-semibold text-white">{{ stock.name }}</span> 
+                ({{ stock.get_unit_display }})
+            </p>
+        </div>
+
+        <form method="POST" class="p-8 space-y-6">
+            {% csrf_token %}
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Quantity Received</label>
+                    <div class="relative">
+                        <input type="number" name="quantity_received" step="0.01" required 
+                               class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:bg-white outline-none transition-all"
+                               placeholder="e.g. 50">
+                        <span class="absolute right-4 top-3.5 text-gray-400 text-sm">{{ stock.unit }}</span>
+                    </div>
+                    <p class="text-xs text-gray-400 mt-1">Current total: {{ stock.quantity }} {{ stock.unit }}</p>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Cost Price (Per Unit)</label>
+                    <div class="relative">
+                        <span class="absolute left-4 top-3.5 text-gray-400">RWF</span>
+                        <input type="number" name="cost_price" step="0.01" required 
+                               class="w-full pl-14 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:bg-white outline-none transition-all"
+                               placeholder="0.00">
+                    </div>
+                    <p class="text-xs text-gray-400 mt-1">Last price: RWF {{ stock.buy_price }}</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Expiry Date (Optional)</label>
+                    <input type="date" name="expiry_date" 
+                           class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:bg-white outline-none transition-all">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Batch Notes (Optional)</label>
+                    <input type="text" name="batch_notes" 
+                           class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:bg-white outline-none transition-all"
+                           placeholder="Supplier name or invoice #">
+                </div>
+            </div>
+
+            <div class="bg-blue-50 border-l-4 border-blue-400 p-4 rounded-r-xl">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm text-blue-700">
+                            This will create a new <strong>FIFO batch</strong>. The system will sell these items only after the current stock is finished.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex items-center justify-end space-x-4 pt-4 border-t border-gray-100">
+                <a href="{% url 'inventory' %}" class="px-6 py-3 text-gray-500 font-medium hover:text-gray-700 transition-colors">
+                    Cancel
+                </a>
+                <button type="submit" class="px-10 py-3 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 shadow-lg shadow-indigo-100 transition-all active:scale-95">
+                    Register Delivery
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

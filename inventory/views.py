@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic import View, CreateView, UpdateView
 from django.contrib.messages.views import SuccessMessageMixin
 from django.contrib import messages
-from django.db.models import Sum, F, Q, Count
+from django.db.models import Sum, F, Q
 from django.urls import reverse_lazy
 from django.db import transaction
 from django.contrib.auth.models import User
@@ -14,7 +14,7 @@ from django.utils import timezone
 from datetime import timedelta
 
 # Local imports
-from .models import Canteen, Stock, Student, Transaction, TransactionItem, Category
+from .models import Canteen, Stock, Student, Transaction, TransactionItem, Category, StockBatch
 from .forms import StockForm, CategoryForm
 from .filters import StockFilter, TransactionFilter 
 
@@ -64,7 +64,6 @@ def canteen_dashboard(request):
 
     stocks = Stock.objects.filter(canteen=my_canteen, is_deleted=False)
     
-    # Header Statistics
     total_value = sum(item.total_stock_value for item in stocks)
     total_profit = sum(item.potential_total_profit for item in stocks)
     total_balances = Student.objects.filter(canteen=my_canteen).aggregate(Sum('balance'))['balance__sum'] or 0
@@ -76,59 +75,27 @@ def canteen_dashboard(request):
 
     recent_transactions = Transaction.objects.filter(canteen=my_canteen).order_by('-timestamp')[:5]
 
-    # --- CHART LOGIC ---
-    
-    # 1. Top Sold Items
     top_sold = TransactionItem.objects.filter(
         transaction__canteen=my_canteen, 
         transaction__type='SALE'
     ).values('stock__name').annotate(total_qty=Sum('quantity')).order_by('-total_qty')[:5]
 
-    # 2. 7-Day Revenue Trend
     revenue_labels = []
     revenue_data = []
     today = timezone.now().date()
     for i in range(6, -1, -1):
         date = today - timedelta(days=i)
         revenue_labels.append(date.strftime('%b %d'))
-        daily_total = Transaction.objects.filter(
-            canteen=my_canteen, 
-            type='SALE', 
-            timestamp__date=date
-        ).aggregate(Sum('total_amount'))['total_amount__sum'] or 0
+        daily_total = Transaction.objects.filter(canteen=my_canteen, type='SALE', timestamp__date=date).aggregate(Sum('total_amount'))['total_amount__sum'] or 0
         revenue_data.append(float(daily_total))
-
-    # 3. Category Value (Doughnut) & Radar Data
-    # We group by category and sum values
-    cat_totals = {}
-    radar_sales = {}
-    
-    for s in stocks:
-        cat_name = s.category.name if s.category else "Uncategorized"
-        cat_totals[cat_name] = cat_totals.get(cat_name, 0) + float(s.total_stock_value)
-
-    # Radar Chart - Most active categories by sales count
-    radar_data_query = TransactionItem.objects.filter(
-        transaction__canteen=my_canteen, 
-        transaction__type='SALE'
-    ).values('stock__category__name').annotate(count=Count('id'))
-
-    radar_labels = []
-    radar_values = []
-    for entry in radar_data_query:
-        name = entry['stock__category__name'] or "Uncategorized"
-        radar_labels.append(name)
-        radar_values.append(entry['count'])
 
     chart_data = {
         'top_labels': [item['stock__name'] for item in top_sold],
         'top_data': [float(item['total_qty']) for item in top_sold],
         'revenue_labels': revenue_labels,
         'revenue_data': revenue_data,
-        'cat_labels': list(cat_totals.keys()),
-        'cat_data': list(cat_totals.values()),
-        'radar_labels': radar_labels,
-        'radar_data': radar_values,
+        'cat_labels': list(set([s.category.name if s.category else "Uncategorized" for s in stocks])),
+        'cat_data': [float(sum(s.total_stock_value for s in stocks if (s.category.name if s.category else "Uncategorized") == cat)) for cat in list(set([s.category.name if s.category else "Uncategorized" for s in stocks]))]
     }
 
     context = {
@@ -143,7 +110,7 @@ def canteen_dashboard(request):
     }
     return render(request, "inventory/index.html", context)
 
-# --- 3. MODERN POS & CART LOGIC ---
+# --- 3. MODERN POS & CART LOGIC (FIFO INCLUDED) ---
 
 @login_required
 def add_to_cart(request, stock_id):
@@ -211,6 +178,21 @@ def process_sale(request):
                 for item_id, data in cart.items():
                     stock_item = Stock.objects.get(id=item_id, canteen=my_canteen)
                     qty_to_deduct = Decimal(str(data['quantity']))
+                    
+                    # FIFO logic using StockBatch
+                    batches = StockBatch.objects.filter(stock_item=stock_item, current_quantity__gt=0).order_by('date_received')
+                    temp_qty = qty_to_deduct
+                    for batch in batches:
+                        if temp_qty <= 0: break
+                        if batch.current_quantity >= temp_qty:
+                            batch.current_quantity -= temp_qty
+                            batch.save()
+                            temp_qty = 0
+                        else:
+                            temp_qty -= batch.current_quantity
+                            batch.current_quantity = 0
+                            batch.save()
+
                     stock_item.quantity -= qty_to_deduct
                     stock_item.save()
                     
@@ -224,7 +206,6 @@ def process_sale(request):
                 request.session['cart'] = {}
                 messages.success(request, "Transaction Completed Successfully!")
                 return redirect('home')
-                
         except Exception as e:
             messages.error(request, f"System Error: {str(e)}")
 
@@ -243,7 +224,6 @@ class StockListView(FilterView):
     filterset_class = StockFilter
     template_name = 'inventory/inventory.html' 
     paginate_by = 50 
-    
     def get_queryset(self):
         queryset = Stock.objects.filter(canteen=self.request.user.canteen, is_deleted=False).select_related('category')
         if self.request.GET.get('low_stock') == 'true':
@@ -274,6 +254,34 @@ class StockUpdateView(SuccessMessageMixin, UpdateView):
         kwargs = super().get_form_kwargs()
         kwargs['canteen'] = self.request.user.canteen
         return kwargs
+
+class StockDeleteView(View):
+    def post(self, request, pk):  
+        stock = get_object_or_404(Stock, pk=pk, canteen=request.user.canteen)
+        stock.is_deleted = True
+        stock.save()                                
+        return redirect('inventory')
+
+@login_required
+def receive_new_stock(request, stock_id):
+    my_canteen = request.user.canteen
+    stock_item = get_object_or_404(Stock, id=stock_id, canteen=my_canteen)
+    if request.method == 'POST':
+        qty = Decimal(request.POST.get('quantity_received', 0))
+        price = Decimal(request.POST.get('cost_price', 0))
+        StockBatch.objects.create(
+            stock_item=stock_item,
+            quantity_received=qty,
+            current_quantity=qty,
+            cost_price=price,
+            expiry_date=request.POST.get('expiry_date') or None
+        )
+        stock_item.quantity += qty
+        stock_item.buy_price = price  
+        stock_item.save()
+        messages.success(request, f"Added {qty} units to {stock_item.name}")
+        return redirect('inventory')
+    return render(request, "inventory/receive_stock.html", {'stock': stock_item})
 
 @method_decorator(login_required, name='dispatch')
 class CategoryCreateView(SuccessMessageMixin, CreateView):
@@ -344,9 +352,14 @@ def clear_cart(request):
     request.session['cart'] = {}
     return redirect('process_sale')
 
-class StockDeleteView(View):
-    def post(self, request, pk):  
-        stock = get_object_or_404(Stock, pk=pk, canteen=request.user.canteen)
-        stock.is_deleted = True
-        stock.save()                                
-        return redirect('inventory')
+@login_required
+def batch_history(request, stock_id):
+    my_canteen = request.user.canteen
+    stock_item = get_object_or_404(Stock, id=stock_id, canteen=my_canteen)
+    # Get all batches for this item, newest first
+    batches = StockBatch.objects.filter(stock_item=stock_item).order_by('-date_received')
+    
+    return render(request, "inventory/batch_history.html", {
+        'stock': stock_item,
+        'batches': batches
+    })

@@ -56,8 +56,6 @@ class Stock(models.Model):
     buy_price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     sell_price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     is_deleted = models.BooleanField(default=False)
-    
-    # NEW: Optional custom low stock threshold
     low_stock_threshold = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
 
     class Meta:
@@ -68,7 +66,6 @@ class Stock(models.Model):
 
     @property
     def is_low(self):
-        """Returns True if quantity is at or below threshold (if set)"""
         if self.low_stock_threshold is not None:
             return self.quantity <= self.low_stock_threshold
         return False
@@ -104,3 +101,17 @@ class TransactionItem(models.Model):
     stock = models.ForeignKey(Stock, on_delete=models.CASCADE)
     quantity = models.DecimalField(max_digits=10, decimal_places=2, default=1.00)
     price_at_time_of_sale = models.DecimalField(max_digits=10, decimal_places=2)
+
+# 7. STOCK BATCH (FIFO STORAGE)
+class StockBatch(models.Model):
+    stock_item = models.ForeignKey(Stock, on_delete=models.CASCADE, related_name='delivery_batches')
+    quantity_received = models.DecimalField(max_digits=10, decimal_places=2)
+    # This is what we deduct from during sales
+    current_quantity = models.DecimalField(max_digits=10, decimal_places=2) 
+    cost_price = models.DecimalField(max_digits=10, decimal_places=2)
+    date_received = models.DateTimeField(auto_now_add=True)
+    expiry_date = models.DateField(null=True, blank=True)
+    batch_notes = models.TextField(blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.stock_item.name} - {self.current_quantity} remaining (Rec: {self.date_received.date()})"
