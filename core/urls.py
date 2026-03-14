@@ -32,7 +32,7 @@ urlpatterns = [
     path('', inventory_views.canteen_dashboard, name='home'),
 
     # 2. Main App Logic (Inventory, POS, History, Students)
-    path('inventory/', include('inventory.urls')),
+    path('', include('inventory.urls')),
 
     # NOTE: Transactions and Homepage paths have been REMOVED to 
     # prevent conflicts and ensure only the New UI is used.

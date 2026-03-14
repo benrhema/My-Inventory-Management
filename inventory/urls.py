@@ -1,13 +1,12 @@
 from django.urls import path
 from django.contrib.auth import views as auth_views
-from django.views.generic import TemplateView # Added for waiting_approval
+from django.views.generic import TemplateView
 from . import views
 
 urlpatterns = [
     # 1. Authentication & Registration
-    # This is now the ROOT page (http://127.0.0.1:8000/)
+    # ROOT page is Login
     path('', auth_views.LoginView.as_view(template_name='inventory/login.html'), name='login'),
-    
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
     path('register/', views.register_canteen, name='register'),
     
@@ -19,7 +18,6 @@ urlpatterns = [
     path('superadmin/approve/<int:pk>/', views.approve_canteen, name='approve_canteen'),
 
     # 3. Dashboard
-    # Moved dashboard to /dashboard/ since '' is taken by Login
     path('dashboard/', views.canteen_dashboard, name='home'),
 
     # 4. Inventory Management
@@ -39,7 +37,8 @@ urlpatterns = [
     path('history/', views.TransactionListView.as_view(), name='transaction_history'),
     
     # 7. Cart Logic
-    path('cart/add/<int:stock_id>/', views.add_to_cart, name='add_to_cart'),
+    # Note: Using underscores 'add_to_cart' to match the template tag
+    path('add-to-cart/<int:stock_id>/', views.add_to_cart, name='add_to_cart'),
     path('cart/remove/<int:stock_id>/', views.remove_from_cart, name='remove_from_cart'),
     path('cart/clear/', views.clear_cart, name='clear_cart'),
 ]

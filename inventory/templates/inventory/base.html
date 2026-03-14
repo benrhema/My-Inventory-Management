@@ -5,8 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Canteen Pro | Management</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        .animate-notification {
+            animation: slideIn 0.3s ease-out forwards;
+        }
+    </style>
 </head>
 <body class="bg-gray-50 text-gray-900 font-sans">
 
@@ -57,14 +67,39 @@
             </div>
         </aside>
 
-        <main class="flex-1 min-h-screen p-4 lg:p-10">
+        <main class="flex-1 min-h-screen p-4 lg:p-10 relative">
             
             {% if messages %}
-            <div class="mb-6 space-y-2">
+            <div id="toast-container" class="fixed top-4 right-4 z-50 space-y-3 w-80">
                 {% for message in messages %}
-                <div class="p-4 rounded-xl {% if message.tags == 'success' %}bg-green-100 text-green-700 border border-green-200{% else %}bg-red-100 text-red-700 border border-red-200{% endif %} flex items-center shadow-sm">
-                    <i data-lucide="info" class="w-5 h-5 mr-2"></i>
-                    {{ message }}
+                <div class="message-toast animate-notification p-4 rounded-xl shadow-xl border flex items-start 
+                    {% if message.tags == 'success' %}
+                        bg-green-50 border-green-200 text-green-800
+                    {% elif message.tags == 'warning' %}
+                        bg-orange-50 border-orange-200 text-orange-800
+                    {% elif message.tags == 'error' %}
+                        bg-red-50 border-red-200 text-red-800
+                    {% else %}
+                        bg-blue-50 border-blue-200 text-blue-800
+                    {% endif %}">
+                    
+                    <div class="mr-3 mt-0.5">
+                        {% if message.tags == 'success' %}
+                            <i data-lucide="check-circle" class="w-5 h-5"></i>
+                        {% elif message.tags == 'warning' %}
+                            <i data-lucide="alert-triangle" class="w-5 h-5"></i>
+                        {% else %}
+                            <i data-lucide="bell" class="w-5 h-5"></i>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="flex-1">
+                        <p class="text-sm font-bold leading-tight">{{ message }}</p>
+                    </div>
+
+                    <button onclick="this.parentElement.remove()" class="ml-2 text-gray-400 hover:text-gray-600">
+                        <i data-lucide="x" class="w-4 h-4"></i>
+                    </button>
                 </div>
                 {% endfor %}
             </div>
@@ -82,9 +117,21 @@
         // Simple Mobile Menu Toggle
         const btn = document.getElementById('menu-btn');
         const sidebar = document.getElementById('sidebar');
-        btn.addEventListener('click', () => {
-            sidebar.classList.toggle('hidden');
-        });
+        if (btn && sidebar) {
+            btn.addEventListener('click', () => {
+                sidebar.classList.toggle('hidden');
+            });
+        }
+
+        // Auto-dismiss notifications after 5 seconds
+        setTimeout(() => {
+            const toasts = document.querySelectorAll('.message-toast');
+            toasts.forEach(toast => {
+                toast.style.transition = 'opacity 0.5s ease';
+                toast.style.opacity = '0';
+                setTimeout(() => toast.remove(), 500);
+            });
+        }, 5000);
     </script>
 </body>
 </html>

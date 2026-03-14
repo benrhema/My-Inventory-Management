@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 
-# 1. CANTEEN MODEL (The "Portal" owner)
+# 1. CANTEEN MODEL
 class Canteen(models.Model):
     owner = models.OneToOneField(User, on_delete=models.CASCADE, related_name='canteen')
     name = models.CharField(max_length=100)
@@ -13,7 +13,6 @@ class Canteen(models.Model):
 
 # 2. CATEGORY MODEL
 class Category(models.Model):
-    # Added null=True, blank=True to allow migration with existing data
     canteen = models.ForeignKey(Canteen, on_delete=models.CASCADE, related_name='categories', null=True, blank=True)
     name = models.CharField(max_length=50)
     description = models.TextField(blank=True, null=True)
@@ -39,20 +38,40 @@ class Student(models.Model):
 
 # 4. STOCK/PRODUCT MODEL
 class Stock(models.Model):
+    UNIT_CHOICES = [
+        ('PCS', 'Pieces (pcs)'),
+        ('KG', 'Kilograms (kg)'),
+        ('L', 'Liters (L)'),
+        ('G', 'Grams (g)'),
+        ('PKT', 'Packets (pkt)'),
+        ('BTL', 'Bottles (btl)'),
+    ]
+
     canteen = models.ForeignKey(Canteen, on_delete=models.CASCADE, related_name='stocks', null=True, blank=True)
     id = models.AutoField(primary_key=True)
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='stocks', null=True, blank=True)
     name = models.CharField(max_length=30)
-    quantity = models.IntegerField(default=1)
+    quantity = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    unit = models.CharField(max_length=10, choices=UNIT_CHOICES, default='PCS')
     buy_price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     sell_price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     is_deleted = models.BooleanField(default=False)
+    
+    # NEW: Optional custom low stock threshold
+    low_stock_threshold = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
 
     class Meta:
         unique_together = ('canteen', 'name')
 
     def __str__(self):
-        return self.name
+        return f"{self.name} ({self.get_unit_display()})"
+
+    @property
+    def is_low(self):
+        """Returns True if quantity is at or below threshold (if set)"""
+        if self.low_stock_threshold is not None:
+            return self.quantity <= self.low_stock_threshold
+        return False
 
     @property
     def total_stock_value(self):
@@ -83,5 +102,5 @@ class Transaction(models.Model):
 class TransactionItem(models.Model):
     transaction = models.ForeignKey(Transaction, on_delete=models.CASCADE, related_name='items')
     stock = models.ForeignKey(Stock, on_delete=models.CASCADE)
-    quantity = models.IntegerField(default=1)
+    quantity = models.DecimalField(max_digits=10, decimal_places=2, default=1.00)
     price_at_time_of_sale = models.DecimalField(max_digits=10, decimal_places=2)
