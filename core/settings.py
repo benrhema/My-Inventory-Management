@@ -18,7 +18,7 @@ SECRET_KEY = 'qyu(9l9v%^+r(vt#ecf+36#lis516#3bo5@bo-rd*d%a=!%8#!'
 
 DEBUG = True
 
-ALLOWED_HOSTS = ['*'] # Set to '*' for development/hosting flexibility
+ALLOWED_HOSTS = ['Ben2.pythonanywhere.com', 'localhost', '127.0.0.1']
 
 INSTALLED_APPS = [
     'django.contrib.admin',
