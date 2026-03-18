@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CanteenPro | Professional Inventory Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://unpkg.com/aos@next/dist/aos.css" rel="stylesheet">
+    <style>
+        /* High-end dark gradient theme */
+        body { 
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+            color: white;
+            overflow-x: hidden;
+        }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #1e293b; }
+        ::-webkit-scrollbar-thumb { background: linear-gradient(#64748b, #94a3b8); border-radius: 4px; }
+        
+        /* Particles canvas */
+        #particles-js { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100vh; z-index: -1; 
+        }
+    </style>
+</head>
+<body>
+
+<!-- Particles Background -->
+<div id="particles-js"></div>
+
+<!-- Hero Section -->
+<section class="relative min-h-screen flex items-center justify-center px-4 py-20 overflow-hidden">
+    <div class="text-center max-w-4xl mx-auto z-20 relative">
+        <h1 class="text-5xl md:text-7xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-indigo-500 bg-clip-text text-transparent mb-6 drop-shadow-2xl animate-pulse">
+            Professional Inventory
+        </h1>
+        <h1 class="text-5xl md:text-7xl font-bold bg-gradient-to-r from-white to-gray-200 mb-8 drop-shadow-2xl" data-aos="fade-up" data-aos-delay="200">
+            Management System
+        </h1>
+        <p class="text-xl md:text-2xl text-gray-300 mb-12 max-w-2xl mx-auto leading-relaxed" data-aos="fade-up" data-aos-delay="400">
+            Real-time tracking, automated reporting, and intelligent low-stock alerts for your school canteen operations.
+        </p>
+        <a href="/login/" 
+           class="inline-block bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold py-6 px-12 rounded-2xl text-xl shadow-2xl hover:shadow-3xl transform hover:-translate-y-2 transition-all duration-300 hover:scale-105" 
+           data-aos="zoom-in" data-aos-delay="600">
+            <span>Get Started Free</span>
+        </a>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="py-32 px-8">
+    <div class="max-w-7xl mx-auto">
+        <div class="text-center mb-32" data-aos="fade-up">
+            <h2 class="text-5xl md:text-6xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent mb-6">
+                Powerful Features
+            </h2>
+            <p class="text-xl text-gray-400 max-w-3xl mx-auto">
+                Everything you need to manage your inventory with professional precision
+            </p>
+        </div>
+        
+        <div class="grid md:grid-cols-3 gap-12">
+            <div class="group" data-aos="fade-up" data-aos-delay="100">
+                <div class="w-24 h-24 bg-gradient-to-r from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-8 shadow-2xl group-hover:scale-110 transition-all duration-500">
+                    <i data-lucide="clock" class="w-12 h-12 text-white"></i>
+                </div>
+                <h3 class="text-3xl font-bold text-white mb-6 text-center group-hover:text-blue-400 transition-colors">
+                    Real-time Tracking
+                </h3>
+                <p class="text-lg text-gray-400 text-center leading-relaxed max-w-md mx-auto">
+                    Monitor stock levels instantly across all locations with live updates and intelligent forecasting.
+                </p>
+            </div>
+            
+            <div class="group" data-aos="fade-up" data-aos-delay="200">
+                <div class="w-24 h-24 bg-gradient-to-r from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-8 shadow-2xl group-hover:scale-110 transition-all duration-500">
+                    <i data-lucide="bar-chart-3" class="w-12 h-12 text-white"></i>
+                </div>
+                <h3 class="text-3xl font-bold text-white mb-6 text-center group-hover:text-purple-400 transition-colors">
+                    Automated Reporting
+                </h3>
+                <p class="text-lg text-gray-400 text-center leading-relaxed max-w-md mx-auto">
+                    Generate professional reports automatically with export options and customizable dashboards.
+                </p>
+            </div>
+            
+            <div class="group" data-aos="fade-up" data-aos-delay="300">
+                <div class="w-24 h-24 bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-8 shadow-2xl group-hover:scale-110 transition-all duration-500">
+                    <i data-lucide="bell" class="w-12 h-12 text-white"></i>
+                </div>
+                <h3 class="text-3xl font-bold text-white mb-6 text-center group-hover:text-emerald-400 transition-colors">
+                    Low Stock Alerts
+                </h3>
+                <p class="text-lg text-gray-400 text-center leading-relaxed max-w-md mx-auto">
+                    Get notified before you run out with smart threshold alerts and automatic reorder suggestions.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Success Stories -->
+<section class="py-32 px-8 relative overflow-hidden">
+    <div class="max-w-6xl mx-auto relative z-10">
+        <div class="text-center mb-24" data-aos="fade-up">
+            <h2 class="text-5xl md:text-6xl font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent mb-6">
+                Trusted by Leading Schools
+            </h2>
+            <p class="text-xl text-gray-400 max-w-3xl mx-auto">
+                Join hundreds of satisfied schools streamlining their operations
+            </p>
+        </div>
+        
+        <div class="grid md:grid-cols-3 gap-8">
+            <div class="bg-white/10 backdrop-blur-xl rounded-3xl p-12 border border-white/20 hover:bg-white/20 transition-all duration-500 hover:scale-105 hover:-translate-y-4 shadow-2xl" data-aos="fade-up" data-aos-delay="100">
+                <div class="flex items-center mb-8">
+                    <div class="w-20 h-20 bg-gradient-to-r from-blue-500 to-purple-500 rounded-2xl flex items-center justify-center mr-6">
+                        <i data-lucide="award" class="w-10 h-10 text-white"></i>
+                    </div>
+                    <div>
+                        <h4 class="text-2xl font-bold text-white">Green Valley Academy</h4>
+                        <p class="text-gray-400">Kigali Campus</p>
+                    </div>
+                </div>
+                <p class="text-xl text-gray-300 italic leading-relaxed mb-8">
+                    "Transformed our chaotic inventory into a seamless operation. Sales up 35% with zero stockouts."
+                </p>
+                <div class="flex text-yellow-400">
+                    <i data-lucide="star" class="w-6 h-6 fill-current"></i>
+                    <i data-lucide="star" class="w-6 h-6 fill-current"></i>
+                    <i data-lucide="star" class="w-6 h-6 fill-current"></i>
+                    <i data-lucide="star" class="w-6 h-6 fill-current"></i>
+                    <i data-lucide="star" class="w-6 h-6 fill-current"></i>
+                </div>
+            </div>
+
+            <div class="bg-white/10 backdrop-blur-xl rounded-3xl p-12 border border-white/20 hover:bg-white/20 transition-all duration-500 hover:scale-105 hover:-translate-y-4 shadow-2xl" data-aos="fade-up" data-aos-delay="200">
+                <div class="flex items-center mb-8">
+                    <div class="w-20 h-20 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-2xl flex items-center justify-center mr-6">
+                        <i data-lucide="shield-check" class="w-10 h-10 text-white"></i>
+                    </div>
+                    <div>
+                        <h4 class="text-2xl font-bold text-white">Riverside High School</h4>
+                        <p class="text-gray-400">Musanze Branch</p>
+                    </div>
+                </div>
+                <p class="text-xl text-gray-300 italic leading-relaxed mb-8">
+                    "The low stock alerts saved us countless headaches. Professional reporting impressed our board."
+                </p>
+                <div class="flex text-yellow-400">
+                    <i data-lucide="star" class="w-6 h-6 fill-current"></i>
+                    <i data-lucide="star" class="w-6 h-6 fill-current"></i>
+                    <i data-lucide="star" class="w-6 h-6 fill-current"></i>
+                    <i data-lucide="star" class="w-6 h-6 fill-current"></i>
+                    <i data-lucide="star" class="w-6 h-6 fill-current"></i>
+                </div>
+            </div>
+
+            <div class="bg-white/10 backdrop-blur-xl rounded-3xl p-12 border border-white/20 hover:bg-white/20 transition-all duration-500 hover:scale-105 hover:-translate-y-4 shadow-2xl" data-aos="fade-up" data-aos-delay="300">
+                <div class="flex items-center mb-8">
+                    <div class="w-20 h-20 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center mr-6">
+                        <i data-lucide="users" class="w-10 h-10 text-white"></i>
+                    </div>
+                    <div>
+                        <h4 class="text-2xl font-bold text-white">Hilltop Primary</h4>
+                        <p class="text-gray-400">Butare Location</p>
+                    </div>
+                </div>
+                <p class="text-xl text-gray-300 italic leading-relaxed mb-8">
+                    "Real-time dashboard gives us complete visibility. Our staff loves the intuitive interface."
+                </p>
+                <div class="flex text-yellow-400">
+                    <i data-lucide="star" class="w-6 h-6 fill-current"></i>
+                    <i data-lucide="star" class="w-6 h-6 fill-current"></i>
+                    <i data-lucide="star" class="w-6 h-6 fill-current"></i>
+                    <i data-lucide="star" class="w-6 h-6 fill-current"></i>
+                    <i data-lucide="star" class="w-6 h-6 fill-current"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- About Section -->
+<section class="py-32 px-8">
+    <div class="max-w-4xl mx-auto text-center" data-aos="fade-up">
+        <h2 class="text-5xl md:text-6xl font-bold bg-gradient-to-r from-white via-blue-400 to-purple-400 bg-clip-text text-transparent mb-12">
+            Professional Grade Solution
+        </h2>
+        <div class="bg-white/10 backdrop-blur-xl rounded-3xl p-16 border border-white/30">
+            <p class="text-2xl text-gray-300 leading-relaxed max-w-3xl mx-auto mb-12">
+                Built for schools that demand excellence. Our enterprise-grade inventory system scales effortlessly while delivering the precision and insights your operations require.
+            </p>
+            <div class="grid md:grid-cols-2 gap-12 mt-16">
+                <div class="text-left">
+                    <h3 class="text-3xl font-bold text-white mb-8">Enterprise Ready</h3>
+                    <ul class="space-y-4 text-xl text-gray-300">
+                        <li class="flex items-center"><i data-lucide="check-circle" class="w-8 h-8 text-emerald-400 mr-4"></i>Multi-location support</li>
+                        <li class="flex items-center"><i data-lucide="check-circle" class="w-8 h-8 text-emerald-400 mr-4"></i>Advanced analytics</li>
+                        <li class="flex items-center"><i data-lucide="check-circle" class="w-8 h-8 text-emerald-400 mr-4"></i>Role-based security</li>
+                    </ul>
+                </div>
+                <div class="text-left">
+                    <h3 class="text-3xl font-bold text-white mb-8">School Optimized</h3>
+                    <ul class="space-y-4 text-xl text-gray-300">
+                        <li class="flex items-center"><i data-lucide="check-circle" class="w-8 h-8 text-emerald-400 mr-4"></i>Student wallet system</li>
+                        <li class="flex items-center"><i data-lucide="check-circle" class="w-8 h-8 text-emerald-400 mr-4"></i>POS ready</li>
+                        <li class="flex items-center"><i data-lucide="check-circle" class="w-8 h-8 text-emerald-400 mr-4"></i>Batch expiry tracking</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Footer -->
+<footer class="py-20 px-8">
+    <div class="max-w-4xl mx-auto text-center">
+        <h3 class="text-4xl font-bold text-white mb-8">Ready to Transform Your Operations?</h3>
+        <p class="text-xl text-gray-400 mb-12 max-w-2xl mx-auto">
+            Join leading schools using our platform to achieve operational excellence.
+        </p>
+        <a href="/login/" 
+           class="inline-block bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold py-6 px-12 rounded-2xl text-xl shadow-2xl hover:shadow-3xl transform hover:-translate-y-2 transition-all duration-300"
+           data-aos="zoom-in">
+            Start Your Free Trial
+        </a>
+        <p class="text-gray-500 mt-12 text-sm">&copy; 2024 CanteenPro. Professional Inventory Management.</p>
+    </div>
+</footer>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+<script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script>
+    AOS.init({
+        duration: 1200,
+        once: true,
+        offset: 100
+    });
+
+    particlesJS('particles-js', {
+        particles: {
+            number: { value: 80, density: { enable: true, value_area: 800 } },
+            color: { value: ['#3b82f6', '#8b5cf6', '#06b6d4', '#10b981'] },
+            shape: { type: 'circle' },
+            opacity: { value: 0.5, random: true },
+            size: { value: 3, random: true },
+            line_linked: { enable: true, distance: 150, color: '#64748b', opacity: 0.3, width: 1 },
+            move: { enable: true, speed: 2, direction: 'none', random: true, straight: false }
+        },
+        interactivity: {
+            detect_on: 'canvas',
+            events: { onhover: { enable: true, mode: 'repulse' }, onclick: { enable: true, mode: 'push' } },
+            modes: { repulse: { distance: 100, duration: 0.4 }, push: { particles_nb: 4 } }
+        },
+        retina_detect: true
+    });
+
+    lucide.createIcons();
+</script>
+</body>
+</html>

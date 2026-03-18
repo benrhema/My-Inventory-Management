@@ -15,6 +15,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.views.generic import TemplateView
 from django.contrib.auth import views as auth_views
 from inventory import views as inventory_views  # New Dashboard
 
@@ -26,10 +27,13 @@ urlpatterns = [
     path('login/', auth_views.LoginView.as_view(template_name='inventory/login.html'), name='login'),
     path('logout/', inventory_views.logout_view, name='logout'),
 
+    # Landing Page
+    path('landing/', TemplateView.as_view(template_name='inventory/home.html'), name='landing'),
+
     # --- THE NEW SYSTEM ---
     
     # 1. Home / Dashboard (Now points strictly to Inventory App)
-    path('', inventory_views.canteen_dashboard, name='home'),
+    path('', TemplateView.as_view(template_name='inventory/home_final.html'), name='home'),
 
     # 2. Main App Logic (Inventory, POS, History, Students)
     path('inventory/', include('inventory.urls')),
