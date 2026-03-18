@@ -30,10 +30,10 @@ urlpatterns = [
     # Landing Page
     path('landing/', TemplateView.as_view(template_name='inventory/home.html'), name='landing'),
 
-    # --- THE NEW SYSTEM ---
+    # --- THE NEW SYSTEM --- 
     
     # 1. Home / Dashboard (Now points strictly to Inventory App)
-    path('', TemplateView.as_view(template_name='inventory/home_final.html'), name='home'),
+    path('', TemplateView.as_view(template_name='inventory/home_final.html'), name='landing'),
 
     # 2. Main App Logic (Inventory, POS, History, Students)
     path('inventory/', include('inventory.urls')),

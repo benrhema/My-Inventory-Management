@@ -4,6 +4,7 @@ from django.views.generic import TemplateView
 from . import views
 
 urlpatterns = [
+    path('', views.canteen_dashboard, name='dashboard'),
     # 1. Authentication & Registration
     # redirect_authenticated_user=True prevents logged-in users from seeing the login screen again
 

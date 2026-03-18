@@ -95,5 +95,5 @@ CRISPY_TEMPLATE_PACK = 'bootstrap4'
 
 # --- AUTHENTICATION PATHS ---
 LOGIN_URL = 'login'
-LOGIN_REDIRECT_URL = 'home'
+LOGIN_REDIRECT_URL = '/inventory/'
 LOGOUT_REDIRECT_URL = 'login'
