@@ -4,12 +4,16 @@ from django.views.generic import TemplateView
 from . import views
 
 urlpatterns = [
-    path('', views.canteen_dashboard, name='dashboard'),
+    # --- FIXED: ROOT URL NOW SHOWS YOUR LANDING PAGE (home.html) ---
+    path('', TemplateView.as_view(template_name='inventory/home.html'), name='welcome'),
+
+    # --- FIXED: DASHBOARD MOVED TO /dashboard/ TO AVOID REDIRECT LOOPS ---
+    path('dashboard/', views.canteen_dashboard, name='dashboard'),
+
     # 1. Authentication & Registration
-    # redirect_authenticated_user=True prevents logged-in users from seeing the login screen again
-
-    
-
+    # Note: Using the built-in LoginView
+    path('login/', auth_views.LoginView.as_view(template_name='inventory/login.html'), name='login'),
+    path('logout/', views.logout_view, name='logout'),
     path('register/', views.register_canteen, name='register'),
     
     # 2. Approval Logic
@@ -19,9 +23,6 @@ urlpatterns = [
     # 3. Super Admin Routes
     path('superadmin/', views.superadmin_dashboard, name='superadmin_dashboard'),
     path('superadmin/approve/<int:pk>/', views.approve_canteen, name='approve_canteen'),
-
-    # 4. Dashboard (This is where people go AFTER logging in)
-
 
     # 5. Inventory Management
     path('inventory/', views.StockListView.as_view(), name='inventory'),

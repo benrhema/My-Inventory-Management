@@ -93,7 +93,13 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
 
-# --- AUTHENTICATION PATHS ---
+# --- FIXED AUTHENTICATION PATHS ---
+
+# 1. Where to send users if they try to access a page without logging in
 LOGIN_URL = 'login'
-LOGIN_REDIRECT_URL = '/inventory/'
+
+# 2. Where to send users IMMEDIATELY after they log in (Dashboard)
+LOGIN_REDIRECT_URL = 'dashboard' 
+
+# 3. Where to send users after they log out (Your Landing Page)
 LOGOUT_REDIRECT_URL = 'login'

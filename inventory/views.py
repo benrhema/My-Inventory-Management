@@ -33,7 +33,7 @@ def logout_view(request):
 def register_canteen(request):
     # If already logged in, don't show registration
     if request.user.is_authenticated:
-        return redirect('home')
+        return redirect('dashboard') # Changed from 'home' to 'dashboard'
 
     if request.method == 'POST':
         c_name = request.POST.get('canteen_name')
@@ -71,7 +71,7 @@ def request_approval(request):
     
     # If already approved, get them out of this loop and to the dashboard
     if canteen.is_approved:
-        return redirect('home')
+        return redirect('dashboard') # Changed from 'home' to 'dashboard'
 
     if request.method == 'POST':
         canteen.request_pending = True
@@ -108,7 +108,8 @@ def canteen_dashboard(request):
     try:
         my_canteen = request.user.canteen
     except Canteen.DoesNotExist:
-        return redirect('logout')
+        # Instead of logout, send to register to avoid loop
+        return redirect('register') 
 
     # 3. If not approved:
     if not my_canteen.is_approved:
@@ -263,7 +264,7 @@ def process_sale(request):
 
                 request.session['cart'] = {}
                 messages.success(request, "Transaction Completed Successfully!")
-                return redirect('home')
+                return redirect('dashboard') # Changed from 'home' to 'dashboard'
         except Exception as e:
             messages.error(request, f"System Error: {str(e)}")
 
