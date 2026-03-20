@@ -24,20 +24,21 @@
     #particles-js { 
         position: fixed; top: 0; left: 0; width: 100%; height: 100vh; z-index: -1; 
     }
+
+    /* Safety fix for headings to prevent white boxes */
+    h1 { background: none !important; -webkit-background-clip: initial !important; -webkit-text-fill-color: initial !important; }
 </style>
 {% endblock %}
 
 {% block content %}
-<!-- Particles Background -->
 <div id="particles-js"></div>
 
-<!-- Hero Section -->
 <section class="relative min-h-screen flex items-center justify-center px-4 py-20 overflow-hidden" data-aos="fade">
     <div class="text-center max-w-4xl mx-auto z-10 relative">
         <h1 class="text-5xl md:text-7xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-indigo-500 bg-clip-text text-transparent mb-6 drop-shadow-2xl animate-pulse">
             Professional Inventory
         </h1>
-        <h1 class="text-5xl md:text-7xl font-bold bg-gradient-to-r from-white to-gray-200 mb-8 drop-shadow-2xl" data-aos="fade-up" data-aos-delay="200">
+        <h1 class="text-5xl md:text-7xl font-bold text-white mb-8 drop-shadow-2xl" data-aos="fade-up" data-aos-delay="200">
             Management System
         </h1>
         <p class="text-xl md:text-2xl text-gray-300 mb-12 max-w-2xl mx-auto leading-relaxed" data-aos="fade-up" data-aos-delay="400">
@@ -53,7 +54,6 @@
     </div>
 </section>
 
-<!-- Features Section -->
 <section class="py-32 px-8 bg-gradient-to-b from-slate-900/50 to-transparent">
     <div class="max-w-7xl mx-auto">
         <div class="text-center mb-32" data-aos="fade-up">
@@ -66,7 +66,6 @@
         </div>
         
         <div class="grid md:grid-cols-3 gap-12">
-            <!-- Feature 1 -->
             <div class="group" data-aos="fade-up" data-aos-delay="100">
                 <div class="w-24 h-24 bg-gradient-to-r from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-8 shadow-2xl group-hover:scale-110 transition-all duration-500">
                     <i data-lucide="clock" class="w-12 h-12 text-white"></i>
@@ -80,7 +79,6 @@
                 </p>
             </div>
             
-            <!-- Feature 2 -->
             <div class="group" data-aos="fade-up" data-aos-delay="200">
                 <div class="w-24 h-24 bg-gradient-to-r from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-8 shadow-2xl group-hover:scale-110 transition-all duration-500">
                     <i data-lucide="bar-chart-3" class="w-12 h-12 text-white"></i>
@@ -94,7 +92,6 @@
                 </p>
             </div>
             
-            <!-- Feature 3 -->
             <div class="group" data-aos="fade-up" data-aos-delay="300">
                 <div class="w-24 h-24 bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-8 shadow-2xl group-hover:scale-110 transition-all duration-500">
                     <i data-lucide="bell" class="w-12 h-12 text-white"></i>
@@ -111,7 +108,6 @@
     </div>
 </section>
 
-<!-- Success Stories -->
 <section class="py-32 px-8 bg-gradient-to-t from-slate-900/80 to-transparent relative overflow-hidden">
     <div class="max-w-6xl mx-auto relative z-10">
         <div class="text-center mb-24" data-aos="fade-up">
@@ -124,7 +120,6 @@
         </div>
         
         <div class="grid md:grid-cols-3 gap-8">
-            <!-- Testimonial 1 -->
             <div class="bg-white/10 backdrop-blur-xl rounded-3xl p-12 border border-white/20 hover:bg-white/20 transition-all duration-500 hover:scale-105 hover:-translate-y-4 shadow-2xl" data-aos="fade-up" data-aos-delay="100">
                 <div class="flex items-center mb-8">
                     <div class="w-20 h-20 bg-gradient-to-r from-blue-500 to-purple-500 rounded-2xl flex items-center justify-center mr-6">
@@ -148,7 +143,6 @@
                 </div>
             </div>
             
-            <!-- Testimonial 2 -->
             <div class="bg-white/10 backdrop-blur-xl rounded-3xl p-12 border border-white/20 hover:bg-white/20 transition-all duration-500 hover:scale-105 hover:-translate-y-4 shadow-2xl" data-aos="fade-up" data-aos-delay="200">
                 <div class="flex items-center mb-8">
                     <div class="w-20 h-20 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-2xl flex items-center justify-center mr-6">
@@ -172,7 +166,6 @@
                 </div>
             </div>
             
-            <!-- Testimonial 3 -->
             <div class="bg-white/10 backdrop-blur-xl rounded-3xl p-12 border border-white/20 hover:bg-white/20 transition-all duration-500 hover:scale-105 hover:-translate-y-4 shadow-2xl" data-aos="fade-up" data-aos-delay="300">
                 <div class="flex items-center mb-8">
                     <div class="w-20 h-20 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center mr-6">
@@ -199,7 +192,6 @@
     </div>
 </section>
 
-<!-- About Section -->
 <section class="py-32 px-8">
     <div class="max-w-4xl mx-auto text-center" data-aos="fade-up">
         <h2 class="text-5xl md:text-6xl font-bold bg-gradient-to-r from-white via-blue-400 to-purple-400 bg-clip-text text-transparent mb-12">
@@ -233,7 +225,6 @@
     </div>
 </section>
 
-<!-- CTA Footer -->
 <footer class="py-20 px-8 bg-gradient-to-t from-slate-900 to-transparent">
     <div class="max-w-4xl mx-auto text-center">
         <h3 class="text-4xl font-bold text-white mb-8">Ready to Transform Your Operations?</h3>
@@ -241,17 +232,17 @@
             Join leading schools using our platform to achieve operational excellence.
         </p>
         <a href="{% url 'login' %}" 
-           class="inline-block bg-gradient-to-r from-emerald-500 to-blue-600 hover:from-emerald-600 hover:to-blue-700 text-white font-bold py-6 px-12 rounded-2xl text-xl shadow-2xl hover:shadow-3xl transform hover:-translate-y-2 transition-all duration-300"
-           data-aos="zoom-in">
+            class="inline-block bg-gradient-to-r from-emerald-500 to-blue-600 hover:from-emerald-600 hover:to-blue-700 text-white font-bold py-6 px-12 rounded-2xl text-xl shadow-2xl hover:shadow-3xl transform hover:-translate-y-2 transition-all duration-300"
+            data-aos="zoom-in">
             Start Your Free Trial
         </a>
         <p class="text-gray-500 mt-12 text-sm">&copy; 2024 CanteenPro. Professional Inventory Management.</p>
     </div>
 </footer>
 
-<!-- Scripts -->
 <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
 <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
 <script>
     // Initialize AOS
     AOS.init({

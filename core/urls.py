@@ -32,12 +32,12 @@ urlpatterns = [
 
     # --- THE NEW SYSTEM --- 
     
-    # 1. Home / Dashboard (Now points strictly to Inventory App)
+    # 1. Home / Dashboard
     path('', TemplateView.as_view(template_name='inventory/home_final.html'), name='landing'),
 
-    # 2. Main App Logic (Inventory, POS, History, Students)
-    path('inventory/', include('inventory.urls')),
+    # FIX: This shortcut handles the /add-to-cart/ call from your JavaScript
+    path('add-to-cart/<int:stock_id>/', inventory_views.add_to_cart, name='add_to_cart'),
 
-    # NOTE: Transactions and Homepage paths have been REMOVED to 
-    # prevent conflicts and ensure only the New UI is used.
+    # 2. Main App Logic
+    path('inventory/', include('inventory.urls')),
 ]
